@@ -26,12 +26,13 @@ sf::Vector2f& operator-=(const sf::Vector2f& left, const sf::Vector2f& right) {
     res.y = left.y - right.y;
     return res;
 }
+double len(const sf::Vector2f& vec)
+{
+    return sqrt(vec.x * vec.x + vec.y * vec.y);
+}
 double distant(const sf::Vector2f& first, const sf::Vector2f& second)
 {
-    double dx = second.x - first.x;
-    double dy = second.y - first.y;
-
-    return sqrt(dx * dx + dy * dy);
+    return len(second - first);
 }
 
 void flipH(sf::Vector2f& vec)
@@ -52,6 +53,14 @@ void route(sf::Vector2f& vec, double angle)
     vec = res;
 }
 
+sf::Vector2f createVector(const sf::Vector2f& start, const sf::Vector2f& stop)
+{
+    sf::Vector2f res;
+    res.x = stop.x - start.x;
+    res.y = stop.y - start.y;
+    return res;
+}
+
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(1200, 800), "SFML works!");
@@ -62,6 +71,14 @@ int main()
     sf::Vector2f arrow(600, 600);
     sf::Vector2f start_point(600, 700);
     double angle = 0.05;
+
+    sf::CircleShape circle;
+    circle.setRadius(5);
+    circle.setPosition(start_point);
+    circle.setOrigin(sf::Vector2f(5, 5));
+    sf::Vector2f v;
+    bool isBall = false;
+    double left = 400, right = 800, top = 200, bottom = 700;
 
     while (window.isOpen())
     {
@@ -91,9 +108,63 @@ int main()
                     route(arrow, angle * M_PI);
                     arrow += start_point;
                     break;
+                case sf::Keyboard::Space:
+                    v = createVector(start_point, arrow);
+                    v.x = v.x / 400;
+                    v.y = v.y / 400;
+                    isBall = true;
+                    break;
                 }
 
             }
+        }
+
+        if (isBall)
+        {
+            double lenght = len(v);
+            sf::Vector2f pos = circle.getPosition();
+            sf::Vector2f newPosition = circle.getPosition() + v;
+            if (newPosition.x < left)
+            {
+                double k = v.y / v.x;
+                double y = (left - pos.x) * k + pos.y; 
+                sf::Vector2f dot(left, y);
+                sf::Vector2f nv = createVector(dot, newPosition);
+                flipV(nv);
+                flipV(v);
+                newPosition = dot + nv;
+            }
+            if (newPosition.x > right)
+            {
+                double k = v.y / v.x;
+                double y = (right - pos.x) * k + pos.y; 
+                sf::Vector2f dot(right, y);
+                sf::Vector2f nv = createVector(dot, newPosition);
+                flipV(nv);
+                flipV(v);
+                newPosition = dot + nv;
+            }
+            if (newPosition.y < top)
+            {
+                double k = v.x / v.y;
+                double x = (top - pos.y) * k + pos.x; 
+                sf::Vector2f dot(x, top);
+                sf::Vector2f nv = createVector(dot, newPosition);
+                flipH(nv);
+                flipH(v);
+                newPosition = dot + nv;
+            } 
+            if (newPosition.y > bottom)
+            {
+                double k = v.x / v.y;
+                double x = (bottom - pos.y) * k + pos.x; 
+                sf::Vector2f dot(x, bottom);
+                sf::Vector2f nv = createVector(dot, newPosition);
+                flipH(nv);
+                flipH(v);
+                newPosition = dot + nv;
+            } 
+            circle.setPosition(newPosition);
         }
 
         window.clear();
@@ -104,6 +175,21 @@ int main()
         };
 
         window.draw(line, 2, sf::Lines);
+        window.draw(circle);
+
+        sf::Vertex box[] =
+        {
+            sf::Vertex(sf::Vector2f(left, top)),
+            sf::Vertex(sf::Vector2f(right, top)),
+            sf::Vertex(sf::Vector2f(right, top)),
+            sf::Vertex(sf::Vector2f(right, bottom)),
+            sf::Vertex(sf::Vector2f(right, bottom)),
+            sf::Vertex(sf::Vector2f(left, bottom)),
+            sf::Vertex(sf::Vector2f(left, bottom)),
+            sf::Vertex(sf::Vector2f(left, top))
+        };
+        window.draw(box, 8, sf::Lines);
+
         window.display();
     }
     return 0;
