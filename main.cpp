@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "field.hpp"
+#include "arrow.hpp"
 
 int main()
 {
@@ -30,6 +31,12 @@ int main()
                     break;
                 case sf::Keyboard::Right:
                     field.getArrow().rotateRight(angle);
+                    break;
+                case sf::Keyboard::Up:
+                    field.getArrow().addSize(10);
+                    break;
+                case sf::Keyboard::Down:
+                    field.getArrow().addSize(-10);
                     break;
                 case sf::Keyboard::Space:
                     field.addBall();
