@@ -1,7 +1,7 @@
 CC=g++
 CFLAGS=-c
 LDFLAGS=
-SOURCES=main.cpp
+SOURCES=main.cpp ball.cpp field.cpp arrow.cpp operatorVector.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=client
 
