@@ -17,7 +17,7 @@ public:
     void checkRight(Ball& ball, const sf::Vector2f& velocity);
     void checkTop(Ball& ball, const sf::Vector2f& velocity);
     void checkBottom(Ball& ball, const sf::Vector2f& velocity);
-    void update();
+    void update(double diff_clock);
     Arrow& getArrow();
     void render(sf::RenderWindow& window);
     void addBall();

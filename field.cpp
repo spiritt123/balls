@@ -60,7 +60,9 @@ void Field::update(Ball& ball, const sf::Vector2f& velocity)
     if (len(velocity) < 0.0001)
         return;
     sf::Vector2f newPosition = ball.getPosition() + velocity;
-    if (isDotIntoBox(_position, _size, newPosition))
+    double R = ball.getRadius();
+    sf::Vector2f border(R, R);
+    if (isDotIntoBox(_position + border, _size - (border * 2), newPosition))
     {
         ball.setPosition(newPosition);
         return;
@@ -75,12 +77,13 @@ void Field::update(Ball& ball, const sf::Vector2f& velocity)
 void Field::checkLeft(Ball& ball, const sf::Vector2f& velocity)
 {
     sf::Vector2f pos = ball.getPosition();
+    double R = ball.getRadius();
     double k = velocity.y / velocity.x;
-    double y = (_position.x - pos.x) * k + pos.y;
-    if (y < _position.y || y > _position.y + _size.y)
+    double y = (_position.x + R - pos.x) * k + pos.y;
+    if (y < _position.y + R || y > _position.y + _size.y - R)
         return;
     
-    sf::Vector2f dot(_position.x, y); // точка удара о стенку
+    sf::Vector2f dot(_position.x + R, y); // точка удара о стенку
     if (len(createVector(pos, dot)) > len(velocity))
         return;
     ball.decLiveCount();
@@ -97,12 +100,13 @@ void Field::checkLeft(Ball& ball, const sf::Vector2f& velocity)
 
 void Field::checkRight(Ball& ball, const sf::Vector2f& velocity)
 {
+    double R = ball.getRadius();
     sf::Vector2f pos = ball.getPosition();
     double k = velocity.y / velocity.x;
-    double y = (_position.x + _size.x - pos.x) * k + pos.y;
-    if (y < _position.y || y > _position.y + _size.y)
+    double y = (_position.x - R + _size.x - pos.x) * k + pos.y;
+    if (y < _position.y + R || y > _position.y + _size.y - R)
         return;
-    sf::Vector2f dot(_position.x + _size.x, y); // точка удара о стенку
+    sf::Vector2f dot(_position.x + _size.x - R, y); // точка удара о стенку
     if (len(createVector(pos, dot)) > len(velocity))
         return;
     ball.decLiveCount();
@@ -120,12 +124,13 @@ void Field::checkRight(Ball& ball, const sf::Vector2f& velocity)
 
 void Field::checkTop(Ball& ball, const sf::Vector2f& velocity)
 {
+    double R = ball.getRadius();
     sf::Vector2f pos = ball.getPosition();
     double k = velocity.x / velocity.y;
-    double x = (_position.y - pos.y) * k + pos.x;
-    if (x < _position.x || x > _position.x + _size.x)
+    double x = (_position.y + R - pos.y) * k + pos.x;
+    if (x < _position.x + R || x > _position.x + _size.x - R)
         return;
-    sf::Vector2f dot(x, _position.y); // точка удара о стенку
+    sf::Vector2f dot(x, _position.y + R); // точка удара о стенку
     if (len(createVector(pos, dot)) > len(velocity))
         return;
     ball.decLiveCount();
@@ -143,12 +148,13 @@ void Field::checkTop(Ball& ball, const sf::Vector2f& velocity)
 
 void Field::checkBottom(Ball& ball, const sf::Vector2f& velocity)
 {
+    double R = ball.getRadius();
     sf::Vector2f pos = ball.getPosition();
     double k = velocity.x / velocity.y;
-    double x = (_position.y + _size.y - pos.y) * k + pos.x;
-    if (x < _position.x || x > _position.x + _size.x)
+    double x = (_position.y + _size.y - R - pos.y) * k + pos.x;
+    if (x < _position.x + R || x > _position.x + _size.x - R)
         return;
-    sf::Vector2f dot(x, _position.y + _size.y); // точка удара о стенку
+    sf::Vector2f dot(x, _position.y + _size.y - R); // точка удара о стенку
     if (len(createVector(pos, dot)) > len(velocity))
         return;
     ball.decLiveCount();
@@ -164,11 +170,11 @@ void Field::checkBottom(Ball& ball, const sf::Vector2f& velocity)
     update(ball, nv); // обработать остатоное перемещение после удара
 }
 
-void Field::update()
+void Field::update(double diff_clock)
 {
     for (auto &b : _balls)
     {
-        update(b, b.getVelocity());
+        update(b, b.getVelocity() * diff_clock);
     }
     _balls.erase(std::remove_if(_balls.begin(), _balls.end(), [=](const Ball& b){ return !b.getLiveCount(); }), _balls.end());
 }
@@ -191,7 +197,7 @@ void Field::addBall()
 {
     sf::Vector2f v = _arrow.getDirection() * _arrow.getSize();
     sf::Vector2f pos = _arrow.getPosition() + v;
-    Ball ball(pos, v * 0.005);
+    Ball ball(pos, v, 25);
     _balls.push_back(ball);
 }
 

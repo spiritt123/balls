@@ -11,6 +11,8 @@ int main()
 
     Field field(sf::Vector2f(100, 100), sf::Vector2f(400, 600));
     double angle = 0.04;
+    static sf::Clock clock; // google "static with variables", if you need
+    static sf::Time last_time = clock.getElapsedTime();
 
     while (window.isOpen())
     {
@@ -46,7 +48,10 @@ int main()
             }
         }
         
-        field.update();
+        sf::Time current_time = clock.getElapsedTime();
+        double diff_clock = (current_time.asSeconds() - last_time.asSeconds());
+        last_time = current_time;
+        field.update(diff_clock);
         field.render(window);
     }
     return 0;
